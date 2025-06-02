@@ -110,9 +110,13 @@ elif choix == "Commande et gestion des cartes":
 # Page Profil
 elif choix == "Profil":
     st.title("👤 Mon Profil")
-    st.text_input("Nom complet", "Mimi Test")
-    st.text_input("Email", "mimi@email.com")
-    st.text_input("Numéro client", "C123456789")
+    st.text_input("Nom complet", "Ahmed Ben Flen")
+    st.text_input("Email", "Ahmed@email.com")
+    st.text_input("Numéro CIN", "12345678")
+    st.text_input("Mot de passe", "**********")
+    st.text_input("Authentification à deux facteurs ", "Activée")
+    st.text_input("Langue ", "Francais")
+    st.text_input("Canaux de communication ", "")
     st.success("Profil à jour.")
 
 # Page Support
