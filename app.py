@@ -1,9 +1,11 @@
 import streamlit as st
 from PIL import Image
 import os
+import random
 
 st.set_page_config(page_title="BNPL App", layout="wide")
 
+# Dossier contenant les images
 image_path = "images_cartes"
 
 def charger_image(nom_fichier):
@@ -13,6 +15,7 @@ def charger_image(nom_fichier):
     else:
         return None
 
+# Menu
 menu = st.sidebar.selectbox(
     "📋 Menu",
     ["Accueil", "Simulateur", "Suivi Paiements", "Profil", "Boutique", "Commande & Cartes", "Support"]
@@ -21,17 +24,20 @@ menu = st.sidebar.selectbox(
 # ACCUEIL
 if menu == "Accueil":
     st.title("💳 Bienvenue dans votre espace BNPL")
+    choix_carte = random.choice(["virtuelle", "physique", "aucune"])
+    st.markdown("#### Carte achetée :")
 
-    carte_choisie = st.radio("Carte achetée :", ["Carte Virtuelle", "Carte Physique"], horizontal=True)
-
-    if carte_choisie == "Carte Virtuelle":
+    if choix_carte == "virtuelle":
         img = charger_image("carte_virtuelle.png")
-    else:
+        if img:
+            st.image(img, caption="Carte virtuelle", use_column_width=True)
+    elif choix_carte == "physique":
         img = charger_image("carte_physique.png")
+        if img:
+            st.image(img, caption="Carte physique", use_column_width=True)
+    else:
+        st.info("Aucune carte achetée pour le moment.")
 
-    if img:
-        st.image(img, use_column_width=True)
-    
     st.markdown("### 📈 Informations financières")
     col1, col2 = st.columns(2)
     with col1:
@@ -47,14 +53,25 @@ if menu == "Accueil":
 # SIMULATEUR
 elif menu == "Simulateur":
     st.title("🧮 Simulateur BNPL")
-    montant = st.number_input("Montant de l'achat (DT)", min_value=50, step=10)
-    duree = st.slider("Durée de remboursement (mois)", 3, 24, 12)
-    taux = 0.015
-    if montant:
-        mensualite = round((montant * (1 + taux * duree)) / duree, 2)
-        st.success(f"💰 Mensualité estimée : {mensualite} DT/mois pendant {duree} mois.")
+    st.info("Calculez vos mensualités avec un TMM de 7.5% et des frais fixes de 3%")
 
-# SUIVI
+    montant = st.number_input("Montant de l'achat (DT)", min_value=100.0, step=50.0)
+    duree = st.slider("Durée de remboursement (mois)", 1, 12, 6)
+
+    if montant > 0 and duree > 0:
+        taux_interet = 0.105
+        interet_total = round(montant * taux_interet, 2)
+        mensualite = round((montant / duree) + interet_total, 2)
+        total_rembourse = round(mensualite * duree, 2)
+
+        st.markdown("### 🧾 Résultat de la simulation")
+        st.write(f"**Montant de l'achat :** {montant} DT")
+        st.write(f"**Durée :** {duree} mois")
+        st.write(f"**Intérêt total (10.5%) :** {interet_total} DT")
+        st.success(f"💰 Mensualité estimée : **{mensualite} DT/mois**")
+        st.info(f"💳 Total remboursé sur {duree} mois : **{total_rembourse} DT**")
+
+# SUIVI DES PAIEMENTS
 elif menu == "Suivi Paiements":
     st.title("📊 Suivi des Paiements")
     st.table({
@@ -80,7 +97,12 @@ elif menu == "Boutique":
         {"nom": "TV Samsung 50\"", "prix": 1899, "desc": "Smart TV 4K"},
         {"nom": "Canapé d'angle", "prix": 2200, "desc": "Salon confort 5 places"},
         {"nom": "Machine à laver", "prix": 1100, "desc": "Capacité 8kg, éco-énergie"},
-        {"nom": "Chaussures Nike Air", "prix": 320, "desc": "Édition limitée"}
+        {"nom": "Chaussures Nike Air", "prix": 320, "desc": "Édition limitée"},
+        {"nom": "Table à manger 6 places", "prix": 799, "desc": "Design bois clair"},
+        {"nom": "Montre connectée Huawei", "prix": 499, "desc": "Autonomie 10 jours"},
+        {"nom": "Ordinateur portable HP", "prix": 2390, "desc": "Intel i5, 16 Go RAM"},
+        {"nom": "Casque JBL", "prix": 180, "desc": "Qualité audio supérieure"},
+        {"nom": "Réfrigérateur LG", "prix": 2050, "desc": "No frost, 400L"},
     ]
     for p in produits:
         st.write(f"**{p['nom']}** — {p['prix']} DT\n> *{p['desc']}*")
