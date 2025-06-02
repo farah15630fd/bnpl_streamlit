@@ -1,12 +1,9 @@
 import streamlit as st
 from PIL import Image
 import os
-import random
 
-# Configuration de la page
-st.set_page_config(page_title="Application BNPL", layout="wide")
+st.set_page_config(page_title="BNPL App", layout="wide")
 
-# Chargement des images
 image_path = "images_cartes"
 
 def charger_image(nom_fichier):
@@ -16,38 +13,55 @@ def charger_image(nom_fichier):
     else:
         return None
 
-# Menu principal
-menu = ["Accueil", "Simulation Paiement", "Boutique", "Commande et gestion des cartes", "Profil"]
-choix = st.sidebar.selectbox("Navigation", menu)
+menu = st.sidebar.selectbox(
+    "📋 Menu",
+    ["Accueil", "Simulateur", "Suivi Paiements", "Profil", "Boutique", "Commande & Cartes", "Support"]
+)
 
-# Page d'accueil
-if choix == "Accueil":
-    st.title("Bienvenue dans votre espace BNPL")
+# ACCUEIL
+if menu == "Accueil":
+    st.title("💳 Bienvenue dans votre espace BNPL")
 
-    st.markdown("#### Carte achetée :")
-    carte_virtuelle = charger_image("carte_virtuelle.png")
-    carte_physique = charger_image("carte_physique.png")
-    
-    has_carte = random.choice(["virtuelle", "physique", "aucune"])
+    carte_choisie = st.radio("Carte achetée :", ["Carte Virtuelle", "Carte Physique"], horizontal=True)
 
-    if has_carte == "virtuelle" and carte_virtuelle:
-        st.image(carte_virtuelle, caption="Carte virtuelle", use_column_width=True)
-    elif has_carte == "physique" and carte_physique:
-        st.image(carte_physique, caption="Carte physique", use_column_width=True)
+    if carte_choisie == "Carte Virtuelle":
+        img = charger_image("carte_virtuelle.png")
     else:
-        st.info("Aucune carte achetée pour le moment.")
+        img = charger_image("carte_physique.png")
 
-    st.markdown("### Total des paiements effectués (30 jours) : **650 DT**")
-    st.markdown("### Dû dans 30 jours : **350 DT**")
+    if img:
+        st.image(img, use_column_width=True)
+    
+    st.markdown("### 📈 Informations financières")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Total paiements (30 jours)", "650 DT")
+    with col2:
+        st.metric("Dû dans 30 jours", "350 DT")
 
-    st.markdown("### Détails par marque :")
-    marques = [
-        ("Monoprix", "70 DT", "dans 5 jours"),
-        ("Batam", "240 DT", "dans 7 jours"),
-        ("Fatal", "50 DT", "dans 15 jours")
-    ]
-    for marque, montant, delai in marques:
-        st.write(f"- **{marque}** : {montant} ({delai})")
+    st.markdown("### 🛍️ Détails par marque")
+    st.write("- **Monoprix** : 70 DT *(dû dans 5 jours)*")
+    st.write("- **Batam** : 240 DT *(dû dans 7 jours)*")
+    st.write("- **Fatal** : 50 DT *(dû dans 15 jours)*")
+
+# SIMULATEUR
+elif menu == "Simulateur":
+    st.title("🧮 Simulateur BNPL")
+    montant = st.number_input("Montant de l'achat (DT)", min_value=50, step=10)
+    duree = st.slider("Durée de remboursement (mois)", 3, 24, 12)
+    taux = 0.015
+    if montant:
+        mensualite = round((montant * (1 + taux * duree)) / duree, 2)
+        st.success(f"💰 Mensualité estimée : {mensualite} DT/mois pendant {duree} mois.")
+
+# SUIVI
+elif menu == "Suivi Paiements":
+    st.title("📊 Suivi des Paiements")
+    st.table({
+        "Date": ["2025-04-01", "2025-05-01", "2025-06-01"],
+        "Montant (DT)": [80, 80, 80],
+        "Statut": ["Payé", "Payé", "À venir"]
+    })
 
 # PROFIL
 elif menu == "Profil":
@@ -57,64 +71,39 @@ elif menu == "Profil":
     st.text_input("Numéro client", "C123456789")
     st.success("Profil à jour.")
 
-# Page Simulation Paiement
-elif choix == "Simulation Paiement":
-    st.title("Simulateur de Paiement BNPL")
-
-    montant = st.number_input("Montant du crédit (DT)", min_value=0.0, step=50.0)
-    duree = st.slider("Durée (mois)", 1, 12, 6)
-
-    if montant > 0:
-        tmm = 0.075
-        marge = 0.03
-        interet = (tmm + marge) * montant
-        mensualite = interet + (montant / duree)
-
-        st.markdown(f"### Mensualité estimée : **{mensualite:.2f} DT**")
-        st.markdown(f"Dont intérêt : {interet:.2f} DT")
-
-# Page Boutique
-elif choix == "Boutique":
-    st.title("Boutique BNPL")
-
+# BOUTIQUE
+elif menu == "Boutique":
+    st.title("🛍️ Boutiques Partenaires")
+    st.info("Découvrez nos produits partenaires :")
     produits = [
-        {"nom": "Smartphone Samsung A14", "prix": 950, "desc": "Ecran 6.6\" / 128 Go"},
-        {"nom": "Lave-linge LG", "prix": 1200, "desc": "8kg Inverter"},
-        {"nom": "TV Sony 4K 55\"", "prix": 2000, "desc": "HDR, Smart TV"},
-        {"nom": "AirPods Pro", "prix": 850, "desc": "Apple Original"},
-        {"nom": "Ordinateur ASUS 15\"", "prix": 1800, "desc": "Core i5, 8Go RAM"},
-        {"nom": "Climatiseur Samsung 12000 BTU", "prix": 1600, "desc": "Split froid/chaud"},
+        {"nom": "iPhone 14", "prix": 3999, "desc": "Smartphone dernière génération"},
+        {"nom": "TV Samsung 50\"", "prix": 1899, "desc": "Smart TV 4K"},
+        {"nom": "Canapé d'angle", "prix": 2200, "desc": "Salon confort 5 places"},
+        {"nom": "Machine à laver", "prix": 1100, "desc": "Capacité 8kg, éco-énergie"},
+        {"nom": "Chaussures Nike Air", "prix": 320, "desc": "Édition limitée"}
     ]
-
     for p in produits:
-        col1, col2 = st.columns([5, 1])
-        with col1:
-            st.markdown(f"**{p['nom']}** — {p['prix']} DT  \n> *{p['desc']}*")
-        with col2:
-            st.button("🛒", key=p['nom'])
+        st.write(f"**{p['nom']}** — {p['prix']} DT\n> *{p['desc']}*")
 
-# Page Commande et gestion des cartes
-elif choix == "Commande et gestion des cartes":
-    st.title("Commande et Gestion des Cartes")
-
-    carte_virtuelle = charger_image("carte_virtuelle.png")
-    carte_physique = charger_image("carte_physique.png")
+# COMMANDE & CARTES
+elif menu == "Commande & Cartes":
+    st.title("📦 Commande et gestion des cartes")
 
     col1, col2 = st.columns(2)
-
     with col1:
-        if carte_physique:
-            st.image(carte_physique, caption="Carte Physique", use_column_width=True)
-        st.markdown("Prix : **40 DT**")
+        img_v = charger_image("carte_virtuelle.png")
+        if img_v:
+            st.image(img_v, caption="Carte Virtuelle (50 DT)", use_column_width=True)
     with col2:
-        if carte_virtuelle:
-            st.image(carte_virtuelle, caption="Carte Virtuelle", use_column_width=True)
-        st.markdown("Prix : **50 DT**")
+        img_p = charger_image("carte_physique.png")
+        if img_p:
+            st.image(img_p, caption="Carte Physique (40 DT)", use_column_width=True)
 
-    carte_choisie = st.radio("Choisissez la carte à commander :", ("Physique", "Virtuelle"))
-    if st.button("Commander la carte"):
-        st.success(f"Commande effectuée pour la carte {carte_choisie.lower()} !")
+    st.markdown("### 📝 Sélection de carte à commander")
+    choix_carte = st.radio("Choisissez une carte :", ["Carte Virtuelle - 50 DT", "Carte Physique - 40 DT"])
 
+    if st.button("🛒 Commander la carte"):
+        st.success(f"Votre commande pour la **{choix_carte}** a été enregistrée.")
 
 # SUPPORT
 elif menu == "Support":
@@ -124,3 +113,7 @@ elif menu == "Support":
     message = st.text_area("Votre message")
     if st.button("Envoyer"):
         st.success("Message envoyé ! Un conseiller vous contactera bientôt.")
+
+# FOOTER
+st.markdown("---")
+st.markdown("© 2025 - Application Buy Now Pay Later (BNPL) - by Mimi Dev")
