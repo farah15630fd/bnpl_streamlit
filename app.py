@@ -1,11 +1,12 @@
 import streamlit as st
 from PIL import Image
 import os
+import random
 
-# Config page
+# Configuration de la page
 st.set_page_config(page_title="Application BNPL", layout="wide")
 
-# Dossier images
+# Chemin vers les images
 image_path = "images_cartes"
 
 def charger_image(nom_fichier):
@@ -16,129 +17,40 @@ def charger_image(nom_fichier):
         st.warning(f"Image non trouvée : {chemin}")
         return None
 
-# --- Statut carte client stocké en session_state ---
-if "carte_client" not in st.session_state:
-    # Exemple : None, "virtuelle" ou "physique"
-    st.session_state.carte_client = None
-if "statut_carte" not in st.session_state:
-    # Exemple de statut : "active" ou "bloquee"
-    st.session_state.statut_carte = None
-
-if "rediriger_commande" not in st.session_state:
-    st.session_state.rediriger_commande = False
-
-# Menu
+# Menu principal
 menu = ["Accueil", "Simulation Paiement", "Boutique", "Commande et gestion des cartes", "Profil", "Support"]
 choix = st.sidebar.selectbox("Navigation", menu)
 
-# --- PAGE ACCUEIL ---
+# Page d'accueil
 if choix == "Accueil":
     st.title("Bienvenue dans votre espace BNPL")
 
+    # Carte achetée aléatoirement (ou aucune)
     carte_virtuelle = charger_image("carte_virtuelle.png")
     carte_physique = charger_image("carte_physique.png")
+    carte_choisie = random.choice(["virtuelle", "physique", "aucune"])
 
-    if st.session_state.carte_client is not None:
-        st.markdown("#### Carte achetée :")
-        if st.session_state.carte_client == "virtuelle" and carte_virtuelle:
-            st.image(carte_virtuelle, caption="Carte virtuelle", use_container_width=True)
-            st.markdown(f"**Type :** Carte virtuelle")
-        elif st.session_state.carte_client == "physique" and carte_physique:
-            st.image(carte_physique, caption="Carte physique", use_container_width=True)
-            st.markdown(f"**Type :** Carte physique")
-        else:
-            st.info("Carte non disponible.")
-
-        # Affichage du statut de la carte
-        statut = st.session_state.statut_carte or "active"
-        st.markdown(f"**Statut de la carte :** {statut.capitalize()}")
-
-        # Infos paiement (exemple)
-        st.markdown("### Total des paiements effectués (30 jours) : **650 DT**")
-        st.markdown("### Montant dû dans 30 jours : **350 DT**")
-
-        st.markdown("### Détails par marque :")
-        marques = [
-            ("Monoprix", "70 DT", "dans 5 jours"),
-            ("Batam", "240 DT", "dans 7 jours"),
-            ("Fatal", "50 DT", "dans 15 jours")
-        ]
-        for marque, montant, delai in marques:
-            st.write(f"- **{marque}** : {montant} ({delai})")
-
+    st.markdown("#### Carte achetée :")
+    if carte_choisie == "virtuelle" and carte_virtuelle:
+        st.image(carte_virtuelle, caption="Carte virtuelle", use_container_width=True)
+    elif carte_choisie == "physique" and carte_physique:
+        st.image(carte_physique, caption="Carte physique", use_container_width=True)
     else:
-        st.info("Vous ne possédez pas encore de carte BNPL.")
-        if st.button("🛒 Acheter une carte maintenant"):
-            st.session_state.rediriger_commande = True
+        st.info("Aucune carte achetée pour le moment.")
 
-# Redirection automatique vers page commande si demandé
-if st.session_state.rediriger_commande:
-    st.session_state.rediriger_commande = False
-    choix = "Commande et gestion des cartes"
+    st.markdown("### Total des paiements effectués (30 jours) : **650 DT**")
+    st.markdown("### Montant dû dans 30 jours : **350 DT**")
 
-# --- PAGE COMMANDE ET GESTION DES CARTES ---
-if choix == "Commande et gestion des cartes":
-    st.title("Commande et Gestion des Cartes")
+    st.markdown("### Détails par marque :")
+    marques = [
+        ("Monoprix", "70 DT", "dans 5 jours"),
+        ("Batam", "240 DT", "dans 7 jours"),
+        ("Fatal", "50 DT", "dans 15 jours")
+    ]
+    for marque, montant, delai in marques:
+        st.write(f"- **{marque}** : {montant} ({delai})")
 
-    carte_virtuelle = charger_image("carte_virtuelle.png")
-    carte_physique = charger_image("carte_physique.png")
-
-    if st.session_state.carte_client is not None:
-        # Carte existante - affichage message + détails + choix bloqué
-        st.warning("⚠️ Vous possédez déjà une carte BNPL !")
-
-        # Infos carte
-        st.markdown("### Détails de votre carte actuelle :")
-        if st.session_state.carte_client == "virtuelle" and carte_virtuelle:
-            st.image(carte_virtuelle, caption="Carte virtuelle", use_container_width=True)
-            st.markdown("**Type :** Carte virtuelle")
-            st.markdown(f"**Statut :** { (st.session_state.statut_carte or 'active').capitalize() }")
-            st.markdown("**Prix :** 50 DT")
-        elif st.session_state.carte_client == "physique" and carte_physique:
-            st.image(carte_physique, caption="Carte physique", use_container_width=True)
-            st.markdown("**Type :** Carte physique")
-            st.markdown(f"**Statut :** { (st.session_state.statut_carte or 'active').capitalize() }")
-            st.markdown("**Prix :** 40 DT")
-        else:
-            st.info("Carte non disponible.")
-
-        st.markdown("---")
-        st.markdown("### Commande de cartes supplémentaires")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            if carte_physique:
-                st.image(carte_physique, caption="Carte Physique", use_container_width=True)
-            st.markdown("Prix : **40 DT**")
-        with col2:
-            if carte_virtuelle:
-                st.image(carte_virtuelle, caption="Carte Virtuelle", use_container_width=True)
-            st.markdown("Prix : **50 DT**")
-
-        st.radio("Choisissez la carte à commander :", ("Physique", "Virtuelle"), disabled=True)
-
-        st.info("Vous ne pouvez pas commander une nouvelle carte tant que vous avez une carte active.")
-
-    else:
-        # Pas de carte, choix libre + commande
-        col1, col2 = st.columns(2)
-        with col1:
-            if carte_physique:
-                st.image(carte_physique, caption="Carte Physique", use_container_width=True)
-            st.markdown("Prix : **40 DT**")
-        with col2:
-            if carte_virtuelle:
-                st.image(carte_virtuelle, caption="Carte Virtuelle", use_container_width=True)
-            st.markdown("Prix : **50 DT**")
-
-        carte_choisie = st.radio("Choisissez la carte à commander :", ("Physique", "Virtuelle"))
-        if st.button("Commander la carte"):
-            st.session_state.carte_client = carte_choisie.lower()
-            st.session_state.statut_carte = "active"  # Par défaut active
-            st.success(f"Commande effectuée pour la carte {carte_choisie.lower()} !")
-            st.experimental_rerun()
-
-# --- Autres pages ---
+# Simulation Paiement
 elif choix == "Simulation Paiement":
     st.title("Simulateur de Paiement BNPL")
 
@@ -154,6 +66,7 @@ elif choix == "Simulation Paiement":
         st.markdown(f"### Mensualité estimée : **{mensualite:.2f} DT**")
         st.markdown(f"Dont intérêt : {interet:.2f} DT")
 
+# Boutique
 elif choix == "Boutique":
     st.title("Boutique BNPL")
 
@@ -173,6 +86,28 @@ elif choix == "Boutique":
         with col2:
             st.button("🛒", key=p['nom'])
 
+# Commande et gestion des cartes
+elif choix == "Commande et gestion des cartes":
+    st.title("Commande et Gestion des Cartes")
+
+    carte_virtuelle = charger_image("carte_virtuelle.png")
+    carte_physique = charger_image("carte_physique.png")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if carte_physique:
+            st.image(carte_physique, caption="Carte Physique", use_container_width=True)
+        st.markdown("Prix : **40 DT**")
+    with col2:
+        if carte_virtuelle:
+            st.image(carte_virtuelle, caption="Carte Virtuelle", use_container_width=True)
+        st.markdown("Prix : **50 DT**")
+
+    carte_choisie = st.radio("Choisissez la carte à commander :", ("Physique", "Virtuelle"))
+    if st.button("Commander la carte"):
+        st.success(f"Commande effectuée pour la carte {carte_choisie.lower()} !")
+
+# Profil
 elif choix == "Profil":
     st.title("👤 Mon Profil")
     st.text_input("Nom complet", "Mimi Test")
@@ -180,6 +115,7 @@ elif choix == "Profil":
     st.text_input("Numéro client", "C123456789")
     st.success("Profil à jour.")
 
+# Support
 elif choix == "Support":
     st.title("📞 Support Client")
     st.write("Vous avez une question ? Nous sommes là pour vous aider.")
