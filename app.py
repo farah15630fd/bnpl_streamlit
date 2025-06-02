@@ -2,10 +2,10 @@ import streamlit as st
 from PIL import Image
 import os
 
-# Configuration de la page
+# Config page
 st.set_page_config(page_title="Application BNPL", layout="wide")
 
-# Chemin vers les images
+# Dossier images
 image_path = "images_cartes"
 
 def charger_image(nom_fichier):
@@ -16,14 +16,18 @@ def charger_image(nom_fichier):
         st.warning(f"Image non trouvée : {chemin}")
         return None
 
-# --- Gestion du "statut carte client" ---
-# Ici tu peux remplacer ce test par une vraie vérif en base
-# Pour exemple, on stocke dans session_state le type de carte du client
+# --- Statut carte client stocké en session_state ---
 if "carte_client" not in st.session_state:
-    # Valeurs possibles : "virtuelle", "physique", None
+    # Exemple : None, "virtuelle" ou "physique"
     st.session_state.carte_client = None
+if "statut_carte" not in st.session_state:
+    # Exemple de statut : "active" ou "bloquee"
+    st.session_state.statut_carte = None
 
-# Menu principal
+if "rediriger_commande" not in st.session_state:
+    st.session_state.rediriger_commande = False
+
+# Menu
 menu = ["Accueil", "Simulation Paiement", "Boutique", "Commande et gestion des cartes", "Profil", "Support"]
 choix = st.sidebar.selectbox("Navigation", menu)
 
@@ -38,14 +42,18 @@ if choix == "Accueil":
         st.markdown("#### Carte achetée :")
         if st.session_state.carte_client == "virtuelle" and carte_virtuelle:
             st.image(carte_virtuelle, caption="Carte virtuelle", use_container_width=True)
-            st.markdown("**Type :** Carte virtuelle")
+            st.markdown(f"**Type :** Carte virtuelle")
         elif st.session_state.carte_client == "physique" and carte_physique:
             st.image(carte_physique, caption="Carte physique", use_container_width=True)
-            st.markdown("**Type :** Carte physique")
+            st.markdown(f"**Type :** Carte physique")
         else:
             st.info("Carte non disponible.")
 
-        # Exemple d'infos liées à la carte
+        # Affichage du statut de la carte
+        statut = st.session_state.statut_carte or "active"
+        st.markdown(f"**Statut de la carte :** {statut.capitalize()}")
+
+        # Infos paiement (exemple)
         st.markdown("### Total des paiements effectués (30 jours) : **650 DT**")
         st.markdown("### Montant dû dans 30 jours : **350 DT**")
 
@@ -61,11 +69,10 @@ if choix == "Accueil":
     else:
         st.info("Vous ne possédez pas encore de carte BNPL.")
         if st.button("🛒 Acheter une carte maintenant"):
-            # Redirection automatique vers la page commande cartes
             st.session_state.rediriger_commande = True
 
-# --- Redirection interne vers page commande si demandé ---
-if "rediriger_commande" in st.session_state and st.session_state.rediriger_commande:
+# Redirection automatique vers page commande si demandé
+if st.session_state.rediriger_commande:
     st.session_state.rediriger_commande = False
     choix = "Commande et gestion des cartes"
 
@@ -77,16 +84,20 @@ if choix == "Commande et gestion des cartes":
     carte_physique = charger_image("carte_physique.png")
 
     if st.session_state.carte_client is not None:
-        # Client a déjà une carte, on affiche message + infos carte
+        # Carte existante - affichage message + détails + choix bloqué
         st.warning("⚠️ Vous possédez déjà une carte BNPL !")
+
+        # Infos carte
         st.markdown("### Détails de votre carte actuelle :")
         if st.session_state.carte_client == "virtuelle" and carte_virtuelle:
             st.image(carte_virtuelle, caption="Carte virtuelle", use_container_width=True)
             st.markdown("**Type :** Carte virtuelle")
+            st.markdown(f"**Statut :** { (st.session_state.statut_carte or 'active').capitalize() }")
             st.markdown("**Prix :** 50 DT")
         elif st.session_state.carte_client == "physique" and carte_physique:
             st.image(carte_physique, caption="Carte physique", use_container_width=True)
             st.markdown("**Type :** Carte physique")
+            st.markdown(f"**Statut :** { (st.session_state.statut_carte or 'active').capitalize() }")
             st.markdown("**Prix :** 40 DT")
         else:
             st.info("Carte non disponible.")
@@ -109,7 +120,7 @@ if choix == "Commande et gestion des cartes":
         st.info("Vous ne pouvez pas commander une nouvelle carte tant que vous avez une carte active.")
 
     else:
-        # Client n'a pas de carte, choix libre
+        # Pas de carte, choix libre + commande
         col1, col2 = st.columns(2)
         with col1:
             if carte_physique:
@@ -122,12 +133,12 @@ if choix == "Commande et gestion des cartes":
 
         carte_choisie = st.radio("Choisissez la carte à commander :", ("Physique", "Virtuelle"))
         if st.button("Commander la carte"):
-            # On "attribue" la carte au client (stockage session_state ici)
             st.session_state.carte_client = carte_choisie.lower()
+            st.session_state.statut_carte = "active"  # Par défaut active
             st.success(f"Commande effectuée pour la carte {carte_choisie.lower()} !")
-            st.experimental_rerun()  # Recharge la page pour mise à jour
+            st.experimental_rerun()
 
-# --- Autres pages classiques ---
+# --- Autres pages ---
 elif choix == "Simulation Paiement":
     st.title("Simulateur de Paiement BNPL")
 
