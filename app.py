@@ -18,6 +18,9 @@ def charger_image(nom_fichier):
 if "carte_achetee" not in st.session_state:
     st.session_state.carte_achetee = "aucune"
 
+if "page_commande_demande" not in st.session_state:
+    st.session_state.page_commande_demande = False
+
 # Navigation personnalisée
 pages = {
     "Accueil": "accueil",
@@ -28,8 +31,12 @@ pages = {
     "Profil": "profil"
 }
 
-choix = st.sidebar.selectbox("Navigation", list(pages.keys()))
-st.experimental_set_query_params(page=pages[choix])
+# Navigation conditionnelle
+if st.session_state.page_commande_demande:
+    choix = "Commande et gestion des cartes"
+    st.session_state.page_commande_demande = False
+else:
+    choix = st.sidebar.selectbox("Navigation", list(pages.keys()))
 
 # ACCUEIL
 if choix == "Accueil":
@@ -65,13 +72,47 @@ if choix == "Accueil":
         Pour activer votre espace BNPL, vous devez d'abord commander une carte (virtuelle ou physique).
         """)
         if st.button("🛒 Commander maintenant"):
-            st.experimental_set_query_params(page="commande")
-            st.rerun()
+            st.session_state.page_commande_demande = True
+            st.experimental_rerun()
 
-# ... (toutes les autres fenêtres restent inchangées : Simulation, Boutique, Commande, Historique, Profil)
+# SIMULATION PAIEMENT (même contenu pour tous)
+elif choix == "Simulation Paiement":
+    st.title("Simulateur de Paiement BNPL")
 
-# COMMANDER ET GESTION DES CARTES (à compléter comme dans la version précédente)
-if choix == "Commande et gestion des cartes":
+    montant = st.number_input("Montant du crédit (DT)", min_value=0.0, step=50.0)
+    duree = st.slider("Durée (mois)", 1, 12, 6)
+
+    if montant > 0:
+        tmm = 0.075
+        marge = 0.03
+        interet = (tmm + marge) * montant
+        mensualite = interet + (montant / duree)
+
+        st.markdown(f"### Mensualité estimée : **{mensualite:.2f} DT**")
+        st.markdown(f"Dont intérêt : {interet:.2f} DT")
+
+# BOUTIQUE (même contenu pour tous)
+elif choix == "Boutique":
+    st.title("Boutique BNPL")
+
+    produits = [
+        {"nom": "Smartphone Samsung A14", "prix": 950, "desc": "Ecran 6.6\" / 128 Go"},
+        {"nom": "Lave-linge LG", "prix": 1200, "desc": "8kg Inverter"},
+        {"nom": "TV Sony 4K 55\"", "prix": 2000, "desc": "HDR, Smart TV"},
+        {"nom": "AirPods Pro", "prix": 850, "desc": "Apple Original"},
+        {"nom": "Ordinateur ASUS 15\"", "prix": 1800, "desc": "Core i5, 8Go RAM"},
+        {"nom": "Climatiseur Samsung 12000 BTU", "prix": 1600, "desc": "Split froid/chaud"},
+    ]
+
+    for p in produits:
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.markdown(f"**{p['nom']}** — {p['prix']} DT  \n> *{p['desc']}*")
+        with col2:
+            st.button("🛒", key=p['nom'])
+
+# COMMANDE ET GESTION DES CARTES
+elif choix == "Commande et gestion des cartes":
     st.title("Commande et Gestion des Cartes")
     carte_virtuelle = charger_image("carte_virtuelle.png")
     carte_physique = charger_image("carte_physique.png")
@@ -97,6 +138,29 @@ if choix == "Commande et gestion des cartes":
         st.write(f"**Type :** Carte {st.session_state.carte_achetee.capitalize()}")
         st.write("**Date d'expiration :** 12/2026")
         st.write("**Code de sécurité :** ***")
+
+# HISTORIQUE PAIEMENT
+elif choix == "Historique Paiement":
+    st.title("Historique des Paiements")
+
+    if st.session_state.carte_achetee == "aucune":
+        st.info("Historique vide")
+    else:
+        st.markdown("### Paiements par Carte Physique")
+        paiements_physique = [
+            {"date": "15/05/2025", "montant": "150 DT", "marchand": "Carrefour"},
+            {"date": "20/05/2025", "montant": "75 DT", "marchand": "Decathlon"},
+        ]
+        for p in paiements_physique:
+            st.write(f"- {p['date']} : {p['montant']} chez {p['marchand']}")
+
+        st.markdown("### Paiements en Ligne")
+        paiements_en_ligne = [
+            {"date": "17/05/2025", "montant": "200 DT", "marchand": "Amazon"},
+            {"date": "22/05/2025", "montant": "50 DT", "marchand": "Spotify"},
+        ]
+        for p in paiements_en_ligne:
+            st.write(f"- {p['date']} : {p['montant']} chez {p['marchand']}")
 
 # PROFIL
 elif choix == "Profil":
