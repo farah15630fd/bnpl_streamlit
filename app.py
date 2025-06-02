@@ -49,6 +49,14 @@ if choix == "Accueil":
     for marque, montant, delai in marques:
         st.write(f"- **{marque}** : {montant} ({delai})")
 
+# PROFIL
+elif menu == "Profil":
+    st.title("👤 Mon Profil")
+    st.text_input("Nom complet", "Mimi Test")
+    st.text_input("Email", "mimi@email.com")
+    st.text_input("Numéro client", "C123456789")
+    st.success("Profil à jour.")
+
 # Page Simulation Paiement
 elif choix == "Simulation Paiement":
     st.title("Simulateur de Paiement BNPL")
@@ -107,9 +115,12 @@ elif choix == "Commande et gestion des cartes":
     if st.button("Commander la carte"):
         st.success(f"Commande effectuée pour la carte {carte_choisie.lower()} !")
 
-# Page Profil
-elif choix == "Profil":
-    st.title("Mon Profil")
-    st.markdown("Nom : **Mimi Client**")
-    st.markdown("Email : **mimi@email.com**")
-    st.markdown("Statut : **Actif**")
+
+# SUPPORT
+elif menu == "Support":
+    st.title("📞 Support Client")
+    st.write("Vous avez une question ? Nous sommes là pour vous aider.")
+    nom = st.text_input("Votre nom")
+    message = st.text_area("Votre message")
+    if st.button("Envoyer"):
+        st.success("Message envoyé ! Un conseiller vous contactera bientôt.")
