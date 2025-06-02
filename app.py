@@ -116,7 +116,6 @@ elif choix == "Profil":
     st.text_input("Mot de passe", "**********")
     st.text_input("Authentification à deux facteurs ", "Activée")
     st.text_input("Langue ", "Francais")
-    st.text_input("Canaux de communication ", "")
     st.success("Profil à jour.")
 
 # Page Support
