@@ -53,8 +53,20 @@ if choix == "Accueil":
         Pour activer votre espace BNPL, veuillez commander une carte.
         """)
         if st.button("🛒 Commander maintenant"):
-            st.session_state.page = "Commande et gestion des cartes"
-            st.experimental_rerun()
+            import streamlit as st
+
+if st.session_state.carte_achetee == "aucune":
+    st.info("Aucune carte achetée pour le moment.\n\nAucune donnée de paiement disponible tant qu'une carte n'est pas activée.")
+    st.markdown("### 🔍 Qu'est-ce que BNPL ?")
+    st.write("""
+    Le modèle *Buy Now Pay Later* vous permet d’acheter maintenant et de payer plus tard en plusieurs fois. 
+    Pour activer votre espace BNPL, veuillez commander une carte.
+    """)
+    if st.button("🛒 Commander maintenant"):
+        st.sidebar.selectbox("Navigation", ["Commande et gestion des cartes"], index=3)
+        # Mais cette ligne ne changera pas la sélection visible
+        st.warning("Veuillez sélectionner 'Commande et gestion des cartes' dans le menu de navigation à gauche.")
+
 
 # Page Simulation Paiement
 elif choix == "Simulation Paiement":
