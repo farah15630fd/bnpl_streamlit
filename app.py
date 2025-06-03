@@ -137,7 +137,7 @@ elif choix == "Commande et gestion des cartes":
         st.write(f"**Numéro de carte :** 1234 5678 9012 3456")
         st.write(f"**Type :** Carte {st.session_state.carte_achetee.capitalize()}")
         st.write("**Date d'expiration :** 12/2026")
-        st.write("**Code de sécurité :** ***")
+        st.write("**Code de sécurité :** 1234")
 
 # HISTORIQUE PAIEMENT
 elif choix == "Historique Paiement":
