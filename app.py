@@ -85,7 +85,7 @@ elif choix == "Simulation Paiement":
     if montant > 0:
         tmm = 0.075
         marge = 0.03
-        interet = (tmm + marge) * montant
+        interet = (tmm + marge) * (montant/ duree)
         mensualite = interet + (montant / duree)
 
         st.markdown(f"### Mensualité estimée : **{mensualite:.2f} DT**")
